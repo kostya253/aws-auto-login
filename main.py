@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import pyautogui
+import multiprocessing
 
 from time import time, sleep
 import webbrowser
@@ -11,7 +12,16 @@ from boto3.session import Session
 region = "eu-west-1"
 
 
-def find_and_press():
+def find_and_press_8():
+    num_processes = 8
+    pool = multiprocessing.Pool(processes=num_processes)
+    args = range(num_processes)
+    pool.map(find_and_press, args)
+    pool.close()
+    pool.join()
+
+
+def find_and_press(arg):
     # Locate and click on the email address field
     email_field_location = pyautogui.locateOnScreen("Login.PNG")
     if email_field_location:
@@ -119,7 +129,7 @@ def aws_login(start_url, account_id, role_id, command):
     for n in range(1, expires_in // interval + 1):
         sleep(interval)
         try:
-            find_and_press()
+            find_and_press_8()
 
             token = sso_oidc.create_token(
                 grantType="urn:ietf:params:oauth:grant-type:device_code",
@@ -161,7 +171,7 @@ def aws_login(start_url, account_id, role_id, command):
 
 
 def main():
-    print("AWS Auto login v1.0")
+    print("AWS Auto login v1.1")
     aws_login(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
 
 
